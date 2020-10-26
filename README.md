@@ -2,6 +2,11 @@
 
 Project implements the Atlas Fusion local map algorithms.
 
+<img src="images/overview.png" width=50%>
+The main feature of our framework is to build up the model of the surrounding of the autonomous agent and to detect and track objects in this map.
+
+<br>
+
 [Adam Ligocki](https://www.vutbr.cz/en/people/adam-ligocki-154791#navigace-vizitka) · [Aleš Jelínek](https://www.ceitec.cz/ing-ales-jelinek-ph-d/u91705) · [Luděk Žalud](https://scholar.google.com/citations?user=kWXqPAIAAAAJ&hl=en&oi=ao)
 
 ## Prerequisites
@@ -27,10 +32,6 @@ Run ``atlas_fusion <path_to_config_file>``, where the config file could be found
 ## Brief Functionality Overview
 
 For detail description, please see our [whitepaper](https://arxiv.org/abs/2010.11991).
-
-<img src="images/overview.png" width=50%>
-
-The main feature of our framework is to build up the model of the surrounding of the autonomous agent and to detect and track objects in this map.
 
 <br>
 <br>
@@ -59,9 +60,6 @@ Example of reprojection of the NN's detections form RGB image into the thermal i
 <img src="images/depth_ir_overview.png" width=50%>
 
 One of the latest features is the projecting 3D point cloud model into the camera frame. In this way we are able to create depth maps (virtual depth cameras).
-
-<br>
-<br>
 
 ## Attribution
 
