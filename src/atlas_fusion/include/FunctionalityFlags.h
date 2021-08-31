@@ -38,6 +38,7 @@ namespace AtlasFusion {
                            bool generate_depth_map_for_rgb_virtual,
                            bool rgb_to_ir_detection_projection,
                            bool short_term_lidar_aggregation,
+                           bool lidar_colorization,
                            bool use_only_central_lidar,
                            bool lidar_laser_approximations_and_segmentation,
                            bool global_lidar_aggregation,
@@ -45,6 +46,7 @@ namespace AtlasFusion {
                            bool rgb_camera_visualization,
                            bool ir_camera_visualization,
                            bool lidar_visualization,
+                           bool colorized_lidar_visualization,
                            bool imu_visualization,
                            bool gnss_visualization,
                            bool radar_visualization) :
@@ -53,6 +55,7 @@ namespace AtlasFusion {
                 generate_depth_map_for_rgb_virtual_{generate_depth_map_for_rgb_virtual},
                 rgb_to_ir_detection_projection_{rgb_to_ir_detection_projection},
                 short_term_lidar_aggregation_{short_term_lidar_aggregation},
+                lidar_colorization_{lidar_colorization},
                 use_only_central_lidar_{use_only_central_lidar},
                 lidar_laser_approximations_and_segmentation_{lidar_laser_approximations_and_segmentation},
                 global_lidar_aggregation_{global_lidar_aggregation},
@@ -60,6 +63,7 @@ namespace AtlasFusion {
                 rgb_camera_visualization_{rgb_camera_visualization},
                 ir_camera_visualization_{ir_camera_visualization},
                 lidar_visualization_{lidar_visualization},
+                colorized_lidar_visualization_{colorized_lidar_visualization},
                 imu_visualization_{imu_visualization},
                 gnss_visualization_{gnss_visualization},
                 radar_visualization_{radar_visualization} {
@@ -71,6 +75,7 @@ namespace AtlasFusion {
         const bool generate_depth_map_for_rgb_virtual_ = false;
         const bool rgb_to_ir_detection_projection_ = false;
         const bool short_term_lidar_aggregation_ = false;
+        const bool lidar_colorization_ = false;
         const bool use_only_central_lidar_ = false;
         const bool lidar_laser_approximations_and_segmentation_ = false;
         const bool global_lidar_aggregation_ = false;
@@ -78,6 +83,7 @@ namespace AtlasFusion {
         const bool rgb_camera_visualization_ = false;
         const bool ir_camera_visualization_ = false;
         const bool lidar_visualization_ = false;
+        const bool colorized_lidar_visualization_ = false;
         const bool imu_visualization_ = false;
         const bool gnss_visualization_ = false;
         const bool radar_visualization_ = false;

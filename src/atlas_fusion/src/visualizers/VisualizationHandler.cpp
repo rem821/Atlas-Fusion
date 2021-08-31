@@ -48,12 +48,17 @@ namespace AtlasFusion::Visualizers{
 
         auto scan = data->getScan();
         if (data->getLidarIdentifier() == DataLoader::LidarIdentifier::kLeftLidar) {
-            lidarVisualizer_.drawPointcloudOnTopic(scan, Topics::kLidarLeft, LocalMap::Frames::kLidarLeft);
+            lidarVisualizer_.drawPointcloudOnTopic<pcl::PointXYZ>(scan, Topics::kLidarLeft, LocalMap::Frames::kLidarLeft);
         } else if (data->getLidarIdentifier() == DataLoader::LidarIdentifier::kRightLidar) {
-            lidarVisualizer_.drawPointcloudOnTopic(scan, Topics::kLidarRight, LocalMap::Frames::kLidarRight);
+            lidarVisualizer_.drawPointcloudOnTopic<pcl::PointXYZ>(scan, Topics::kLidarRight, LocalMap::Frames::kLidarRight);
         }else if (data->getLidarIdentifier() == DataLoader::LidarIdentifier::kCenterLidar) {
-            lidarVisualizer_.drawPointcloudOnTopic(scan, Topics::kLidarCenter, LocalMap::Frames::kLidarCenter);
+            lidarVisualizer_.drawPointcloudOnTopic<pcl::PointXYZ>(scan, Topics::kLidarCenter, LocalMap::Frames::kLidarCenter);
         }
+    }
+
+
+    void VisualizationHandler::drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data) {
+        lidarVisualizer_.drawPointcloudOnTopic<pcl::PointXYZRGB>(data, Topics::kLidarColorized, LocalMap::Frames::kOrigin);
     }
 
 

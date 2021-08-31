@@ -96,6 +96,14 @@ namespace AtlasFusion::Visualizers {
          */
         void drawLidarData(std::shared_ptr<DataModels::LidarScanDataModel> data);
 
+
+
+        /**
+         * Raw point cloud scan data visualization
+         * @param data point cloud to be visualized
+         */
+        void drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data);
+
         /**
          * Render aggregated point cloud scans over the time
          * @param pc aggregated point cloud

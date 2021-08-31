@@ -57,7 +57,7 @@ visualizations:
   rgb_camera_visualization: true
   ir_camera_visualization: true
   lidar_visualization: true
-  colorized_lidar: true
+  colorized_lidar_visualization: true
   imu_visualization: true
   gnss_visualization: true
   radar_visualization: true
