@@ -218,14 +218,14 @@ namespace AtlasFusion {
         void processImuDQuatData(std::shared_ptr<DataModels::ImuDquatDataModel>, std::string&);
         void processImuGnssData(std::shared_ptr<DataModels::ImuGnssDataModel>, std::string&);
         void processImuImuData(std::shared_ptr<DataModels::ImuImuDataModel>, std::string&);
-        void processLidarScanData(std::shared_ptr<DataModels::LidarScanDataModel>, std::string&);
+        void processLidarScanData(std::shared_ptr<DataModels::LidarScanDataModel<pcl::PointXYZ>>, std::string&);
         void processRadarTiData(std::shared_ptr<DataModels::RadarTiDataModel>, std::string&);
 
         void generateDepthMapForRGBFrame(std::shared_ptr<DataModels::CameraFrameDataModel> rgbImg);
         void generateDepthMapForLastIR(std::shared_ptr<DataModels::CameraFrameDataModel> rgbImg);
         void projectRGBDetectionsToIR(std::shared_ptr<DataModels::CameraFrameDataModel> imgData, std::vector<std::shared_ptr<const DataModels::FrustumDetection>> frustums);
-        void aggregateLidar(const std::shared_ptr<DataModels::LidarScanDataModel>&);
-        void approximateLidar(const std::shared_ptr<DataModels::LidarScanDataModel>&);
+        void aggregateLidar(const std::shared_ptr<DataModels::LidarScanDataModel<pcl::PointXYZ>>&);
+        void approximateLidar(const std::shared_ptr<DataModels::LidarScanDataModel<pcl::PointXYZ>>&);
 
         std::string getFrameForData(const std::shared_ptr<DataModels::GenericDataModel>&);
     };

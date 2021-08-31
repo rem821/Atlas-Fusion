@@ -9,7 +9,7 @@ calibrations_folder: "/home/default_user/Developer/Atlas-Fusion/src/atlas_fusion
 
 map_builder:
   keep_history_sec_length: 10
-  max_replayer_rate: 0.5
+  max_replayer_rate: 1.0
 
 laser_aggregator:
   lasers: 32
@@ -43,6 +43,7 @@ functionalities:
   generate_depth_map_for_ir: false
   rgb_to_ir_detection_projection: false
   short_term_lidar_aggregation: true
+  colorized_lidar: true
   lidar_laser_approximations_and_segmentation: false
   global_lidar_aggregation: false
   use_only_central_lidar: false
@@ -50,11 +51,13 @@ functionalities:
   generate_depth_map_for_rgb_left_front: false
 
 
+
 visualizations:
   visualization_global_enable: true
   rgb_camera_visualization: true
   ir_camera_visualization: true
   lidar_visualization: true
+  colorized_lidar: true
   imu_visualization: true
   gnss_visualization: true
   radar_visualization: true

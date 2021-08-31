@@ -6,5 +6,6 @@
 #define Depth_Map_For_RGB_Left_Front context_.getFunctionalityFlags().generate_depth_map_for_rgb_left_front_
 #define Depth_Map_For_RGB_Virtual context_.getFunctionalityFlags().generate_depth_map_for_rgb_virtual_
 #define Short_Term_Lidar_Aggregation context_.getFunctionalityFlags().short_term_lidar_aggregation_
+#define Lidar_Colorization context_.getFunctionalityFlags().colorized_lidar_
 #define Global_Lidar_Aggregation context_.getFunctionalityFlags().global_lidar_aggregation_
 #define Center_Lidar_Only context_.getFunctionalityFlags().use_only_central_lidar_

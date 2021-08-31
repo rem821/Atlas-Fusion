@@ -164,7 +164,7 @@ namespace AtlasFusion {
 
             } else if (dataType == DataModels::DataModelTypes::kLidarScanDataModelType) {
 
-                mut lidarData = std::dynamic_pointer_cast<DataModels::LidarScanDataModel>(data);
+                mut lidarData = std::dynamic_pointer_cast<DataModels::LidarScanDataModel<pcl::PointXYZ>>(data);
 
                 let lidarID = lidarData->getLidarIdentifier();
                 if (Center_Lidar_Only && lidarID != DataLoader::LidarIdentifier::kCenterLidar) { continue; }
@@ -301,7 +301,7 @@ namespace AtlasFusion {
     }
 
 
-    void MapBuilder::processLidarScanData(std::shared_ptr<DataModels::LidarScanDataModel> lidarData, std::string& sensorFrame) {
+    void MapBuilder::processLidarScanData(std::shared_ptr<DataModels::LidarScanDataModel<pcl::PointXYZ>> lidarData, std::string& sensorFrame) {
 
         let lidarID = lidarData->getLidarIdentifier();
 
@@ -454,7 +454,7 @@ namespace AtlasFusion {
         }
     }
 
-    void MapBuilder::aggregateLidar(const std::shared_ptr<DataModels::LidarScanDataModel>& lidarData) {
+    void MapBuilder::aggregateLidar(const std::shared_ptr<DataModels::LidarScanDataModel<pcl::PointXYZ>>& lidarData) {
 
         let lidarID = lidarData->getLidarIdentifier();
         let sensorFrame = getFrameForData(lidarData);
@@ -485,7 +485,7 @@ namespace AtlasFusion {
     }
 
 
-    void MapBuilder::approximateLidar(const std::shared_ptr<DataModels::LidarScanDataModel>& lidarData) {
+    void MapBuilder::approximateLidar(const std::shared_ptr<DataModels::LidarScanDataModel<pcl::PointXYZ>>& lidarData) {
 
         let lidarID = lidarData->getLidarIdentifier();
         let sensorFrame = getFrameForData(lidarData);
@@ -567,7 +567,7 @@ namespace AtlasFusion {
                 return LocalMap::Frames::kCameraIr;
 
             case DataModels::DataModelTypes::kLidarScanDataModelType:
-                switch(std::dynamic_pointer_cast<DataModels::LidarScanDataModel>(data)->getLidarIdentifier()) {
+                switch(std::dynamic_pointer_cast<DataModels::LidarScanDataModel<pcl::PointXYZ>>(data)->getLidarIdentifier()) {
                     case DataLoader::LidarIdentifier::kLeftLidar:
                         return LocalMap::Frames::kLidarLeft;
                     case DataLoader::LidarIdentifier::kRightLidar:
