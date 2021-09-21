@@ -34,7 +34,8 @@ namespace AtlasFusion::Visualizers {
         const std::string kLidarLeft = "/autodrive/local_map/lidar/left";
         const std::string kLidarRight = "/autodrive/local_map/lidar/right";
         const std::string kLidarCenter = "/autodrive/local_map/lidar/center";
-        const std::string kLidarColorized = "/autodrive/local_map/lidar/colorized";
+        const std::string kLidarColorizedRGB = "/autodrive/local_map/lidar/colorized_rgb";
+        const std::string kLidarColorizedIR = "/autodrive/local_map/lidar/colorized_ir";
         const std::string kImuTopic = "/autodrive/local_map/imu/imu";
         const std::string kImuAvgTopic = "/autodrive/local_map/imu/imu_avg";
         const std::string kGnssTopic = "/autodrive/local_map/gnss/pose_text";

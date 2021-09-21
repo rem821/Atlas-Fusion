@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "data_models/GenericDataModel.h"
-#include "data_models/all.h"
+#include "data_models/yolo/YoloDetection.h"
 
 #include "data_models/DataModelTypes.h"
 #include "data_loader/DataLoaderIdentifiers.h"

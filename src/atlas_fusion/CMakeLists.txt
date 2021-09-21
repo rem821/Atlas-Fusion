@@ -65,8 +65,7 @@ set(SOURCES_ALGORITHMS
         src/algorithms/pointcloud/ObjectDetector.cpp
         src/algorithms/SelfModel.cpp
         src/algorithms/image_processing/SimpleImageHandler.cpp
-
-        )
+        src/algorithms/pointcloud/PointCloudColorizer.cpp)
 
 set(SOURCES_LOCAL_MAP
         src/local_map/TFTree.cpp

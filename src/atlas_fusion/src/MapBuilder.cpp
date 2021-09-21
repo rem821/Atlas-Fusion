@@ -32,6 +32,8 @@
 #include "algorithms/Projector.h"
 #include "algorithms/pointcloud/SphericalPoint.h"
 
+#include "visualizers/Topics.h"
+
 namespace AtlasFusion {
 
 
@@ -69,6 +71,7 @@ namespace AtlasFusion {
 
                 depthMap_.addProjector(projector, cameraID);
                 detectionProcessor_.addProjector(projector, frame);
+                pointCloudColorizer_.add_projector(projector, cameraID);
             } else {
                 context_.logger_.warning("Unable to read camera calib data");
             }
@@ -212,6 +215,12 @@ namespace AtlasFusion {
 
             localMap_.setFrustumDetections(frustums, sensorFrame);
             visualizationHandler_.drawFrustumDetections(localMap_.getFrustumDetections());
+
+            if (Lidar_Colorization) {
+                let originToImuTf = selfModel_.getPosition().toTf();
+                let colorized_pc_rgb = pointCloudColorizer_.colorize_point_cloud_rgb(batches, originToImuTf);
+                visualizationHandler_.drawPointCloudData(colorized_pc_rgb, Visualizers::Topics::kLidarColorizedRGB);
+            }
         }
 
 
@@ -237,6 +246,10 @@ namespace AtlasFusion {
             visualizationHandler_.drawLidarDetection(localMap_.getLidarDetections());
         }
 
+        if (Lidar_Colorization) {
+            pointCloudColorizer_.update_rgb_camera_frame(imgData);
+        }
+
         if (!Center_Lidar_Only) {
             visualizationHandler_.drawRGBImage(imgData);
         }
@@ -256,8 +269,18 @@ namespace AtlasFusion {
                                                              points2Dand3Dpair->second,
                                                              irCameraFrame->getImage().cols,
                                                              irCameraFrame->getImage().rows);
+        if (Lidar_Colorization) {
+            pointCloudColorizer_.update_ir_camera_frame(irCameraFrame);
+        }
+
         if (!Center_Lidar_Only) {
             visualizationHandler_.drawIRImage(irCameraFrame);
+        }
+
+        if (Lidar_Colorization) {
+            let batches = pointCloudAggregator_.getAllBatches();
+            let colorized_pc_ir = pointCloudColorizer_.colorize_point_cloud_ir(batches, originToImuTf);
+            visualizationHandler_.drawPointCloudData(colorized_pc_ir, Visualizers::Topics::kLidarColorizedIR);
         }
     }
 
@@ -317,24 +340,6 @@ namespace AtlasFusion {
             if (cache_.getIRFrameNo(DataLoader::CameraIndentifier::kCameraIr) > 0) {
                 visualizationHandler_.drawIRImage(cache_.getIRFrame(DataLoader::CameraIndentifier::kCameraIr));
             }
-        }
-
-        if (Lidar_Colorization) {
-            mut colorized_pc = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-            let aggregated_pc = pointCloudAggregator_.getAggregatedPointCloud();
-            colorized_pc->reserve(aggregated_pc->size());
-
-            for (let& point : aggregated_pc->points) {
-                mut p = pcl::PointXYZRGB{};
-                p.x = point.x;
-                p.y = point.y;
-                p.z = point.z;
-                p.r = 255.0f;
-                p.g = 0.0f;
-                p.b = 0.0f;
-                colorized_pc->push_back(p);
-            }
-            visualizationHandler_.drawPointCloudData(colorized_pc);
         }
 
         visualizationHandler_.drawLidarData(lidarData);

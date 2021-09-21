@@ -34,6 +34,7 @@
 #include "data_models/DataModelTypes.h"
 #include "data_models/local_map/LidarDetection.h"
 #include "data_models/radar/RadarTiDataModel.h"
+#include "data_models/lidar/LidarScanDataModel.h"
 
 #include "Topics.h"
 #include "Context.h"
@@ -102,7 +103,7 @@ namespace AtlasFusion::Visualizers {
          * Raw point cloud scan data visualization
          * @param data point cloud to be visualized
          */
-        void drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data);
+        void drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data, const std::string& topic);
 
         /**
          * Render aggregated point cloud scans over the time

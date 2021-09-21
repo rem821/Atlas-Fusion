@@ -37,6 +37,7 @@
 #include "algorithms/pointcloud/LaserAggregator.h"
 #include "algorithms/pointcloud/LaserSegmenter.h"
 #include "algorithms/pointcloud/GlobalPointcloudStorage.h"
+#include "algorithms/pointcloud/PointCloudColorizer.h"
 #include "algorithms/yolo_reprojection/YoloDetectionReprojector.h"
 #include "algorithms/pointcloud/ObjectDetector.h"
 #include "algorithms/image_processing/SimpleImageHandler.h"
@@ -122,6 +123,7 @@ namespace AtlasFusion {
         , pointCloudExtrapolator_{context, noOfBatchesPerScan}
         , pointCloudAggregator_{context, liadrAggregationTime}
         , pointCloudProcessor_ {context, leafSize}
+        , pointCloudColorizer_ {context}
         , leftLidarLaserAggregator_{context, noOfLasersPerLidar, noOfLaserAggregatedPoints}
         , rightLidarLaserAggregator_{context, noOfLasersPerLidar, noOfLaserAggregatedPoints}
         , leftLaserSegmenter_{context, noOfLaserAggregatedPoints, vectorizer_sigma, segmenter_step, segmenter_lower_bound, segmenter_upper_bound, segmenter_scaling}
@@ -181,6 +183,7 @@ namespace AtlasFusion {
         Algorithms::PointCloudExtrapolator pointCloudExtrapolator_;
         Algorithms::PointCloudAggregator pointCloudAggregator_;
         Algorithms::PointCloudProcessor pointCloudProcessor_;
+        Algorithms::PointCloudColorizer pointCloudColorizer_;
 
         Algorithms::LaserAggregator leftLidarLaserAggregator_;
         Algorithms::LaserAggregator rightLidarLaserAggregator_;

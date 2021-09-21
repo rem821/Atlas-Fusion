@@ -57,8 +57,8 @@ namespace AtlasFusion::Visualizers{
     }
 
 
-    void VisualizationHandler::drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data) {
-        lidarVisualizer_.drawPointcloudOnTopic<pcl::PointXYZRGB>(data, Topics::kLidarColorized, LocalMap::Frames::kOrigin);
+    void VisualizationHandler::drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data, const std::string& topic) {
+        lidarVisualizer_.drawPointcloudOnTopic<pcl::PointXYZRGB>(data, topic, LocalMap::Frames::kOrigin);
     }
 
 
