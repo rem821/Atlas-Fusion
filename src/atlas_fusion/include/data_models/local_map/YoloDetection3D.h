@@ -39,7 +39,11 @@ namespace AtlasFusion::DataModels {
          * @param y2 bottom border
          */
         explicit BoundingBox2D(float x1, float y1, float x2, float y2)
-        : x1_{x1}, y1_{y1}, x2_{x2}, y2_{y2} {}
+                : x1_{x1}, y1_{y1}, x2_{x2}, y2_{y2} {}
+
+        static BoundingBox2D fromCenterWidthHeight(float cx, float cy, float w, float h) {
+            return BoundingBox2D{cx - w/2, cy - h/2, cx + w/2, cy + h/2};
+        }
 
         float x1_, y1_;
         float x2_, y2_;

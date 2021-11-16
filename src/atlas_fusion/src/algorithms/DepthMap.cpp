@@ -58,7 +58,7 @@ namespace AtlasFusion::Algorithms {
         if(!valid2DPoints.empty()) {
             for (auto &detection : data->getYoloDetections()) {
 
-                auto detPointIndexes = getIndexesOfPointsInDetection(valid2DPoints, detection);
+                auto detPointIndexes = getIndexesOfPointsInDetection(valid2DPoints, detection->scale(0.5));
 
                 auto bb = detection->getBoundingBox();
 

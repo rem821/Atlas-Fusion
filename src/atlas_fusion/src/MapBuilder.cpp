@@ -320,6 +320,9 @@ namespace AtlasFusion {
         mut linAccNoGrav = imuProcessor_.removeGravitaionAcceleration(imuData->getLinearAcc());
 
         selfModel_.onImuImuData(imuData);
+
+        mut currentPose = selfModel_.getPosition();
+        visualizationHandler_.updateOriginToRootTf(currentPose);
         visualizationHandler_.drawImuData(linAccNoGrav);
     }
 

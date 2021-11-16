@@ -26,6 +26,7 @@
 #include <iostream>
 
 #include "data_models/GenericDataModel.h"
+#include "rtl/Core.h"
 
 namespace AtlasFusion::DataModels{
 
@@ -42,10 +43,14 @@ namespace AtlasFusion::DataModels{
         struct YoloDetectionBBox {
             YoloDetectionBBox (int x1, int y1, int x2, int y2)
                     : x1_(x1), x2_(x2), y1_(y1), y2_(y2) { }
+
             int x1_;
             int x2_;
             int y1_;
             int y2_;
+
+            float width() const {return (x2_ - x1_)/2;}
+            float height() const {return (y2_ - y1_)/2;}
         };
 
         /**
@@ -82,6 +87,21 @@ namespace AtlasFusion::DataModels{
          * @return detection's class
          */
         YoloDetectionClass getDetectionClass() const { return detClass_; };
+
+
+        std::shared_ptr<YoloDetection> scale(float scale) const {
+            float center_x = (bbox_.x1_ + bbox_.x2_)/2;
+            float center_y = (bbox_.y1_ + bbox_.y2_)/2;
+            float width = (bbox_.x2_ - bbox_.x1_)/2;
+            float height = (bbox_.y2_ - bbox_.y1_)/2;
+
+            return std::make_shared<YoloDetection>(static_cast<int>(center_x - (width / 2 * scale)),
+                                                   static_cast<int>(center_y - (height / 2 * scale)),
+                                                   static_cast<int>(center_x + (width / 2 * scale)),
+                                                   static_cast<int>(center_y + (height / 2 * scale)),
+                                                   detConfidence_,
+                                                   detClass_);
+        }
 
     private:
 

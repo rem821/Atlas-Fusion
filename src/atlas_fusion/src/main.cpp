@@ -117,18 +117,20 @@ int main(int argc, char** argv) {
     ros::NodeHandle node{};
 
     std::string rootFrame = AtlasFusion::LocalMap::Frames::kImuFrame;
-    std::vector<std::string> childFrames = {AtlasFusion::LocalMap::Frames::kGnssAntennaFront,
-                                            AtlasFusion::LocalMap::Frames::kGnssAntennaRear,
-                                            AtlasFusion::LocalMap::Frames::kLidarLeft,
-                                            AtlasFusion::LocalMap::Frames::kLidarRight,
-                                            AtlasFusion::LocalMap::Frames::kLidarCenter,
-                                            AtlasFusion::LocalMap::Frames::kRadarTi,
-                                            AtlasFusion::LocalMap::Frames::kCameraLeftFront,
-                                            AtlasFusion::LocalMap::Frames::kCameraLeftSide,
-                                            AtlasFusion::LocalMap::Frames::kCameraRightFront,
-                                            AtlasFusion::LocalMap::Frames::kCameraRightSide,
-                                            AtlasFusion::LocalMap::Frames::kCameraIr,
-                                            AtlasFusion::LocalMap::Frames::kCameraVirtual};
+    std::vector<std::string> childFrames = {
+            AtlasFusion::LocalMap::Frames::kGnssAntennaFront,
+            AtlasFusion::LocalMap::Frames::kGnssAntennaRear,
+            AtlasFusion::LocalMap::Frames::kLidarLeft,
+            AtlasFusion::LocalMap::Frames::kLidarRight,
+            AtlasFusion::LocalMap::Frames::kLidarCenter,
+            AtlasFusion::LocalMap::Frames::kRadarTi,
+            AtlasFusion::LocalMap::Frames::kCameraLeftFront,
+            AtlasFusion::LocalMap::Frames::kCameraLeftSide,
+            AtlasFusion::LocalMap::Frames::kCameraRightFront,
+            AtlasFusion::LocalMap::Frames::kCameraRightSide,
+            AtlasFusion::LocalMap::Frames::kCameraIr,
+            AtlasFusion::LocalMap::Frames::kCameraVirtual
+    };
     auto calibFolder = configService.getStringValue({"calibrations_folder"});
     auto tfTree = buildTFTree(
              rootFrame,
