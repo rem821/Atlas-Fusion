@@ -27,7 +27,7 @@
 #include "algorithms/tools.h"
 #include "local_map/Frames.h"
 
-namespace AutoDrive::Algorithms {
+namespace AtlasFusion::Algorithms {
 
     /// Hooks
     void SelfModel::onGnssPose(std::shared_ptr<DataModels::GnssPoseDataModel> data) {
@@ -84,9 +84,8 @@ namespace AutoDrive::Algorithms {
 
             accHistory_.emplace_back( std::pair<rtl::Vector3D<double>,uint64_t >{linAccNoGrav, data->getTimestamp()});
 
-            if( (data->getTimestamp() - accHistory_.front().second) * 1e-9 > 1.0  ) {
+            if( (data->getTimestamp() - accHistory_.front().second) * 1e-9 > 1.0 ) {
                 accHistory_.pop_front();
-
             }
         }
 
@@ -94,7 +93,7 @@ namespace AutoDrive::Algorithms {
             double r,p,y;
             quaternionToRPY(data->getOrientation(), r, p, y);
             rtl::Quaternion<double> modifiedImuOrientation = rpyToQuaternion(r, p ,getHeading());
-            orientation_ = orientation_.slerp(modifiedImuOrientation, 0.001);
+            orientation_ = orientation_.slerp(modifiedImuOrientation, 0.000);
         }
 
         lastImuTimestamp_ = data->getTimestamp();
@@ -112,7 +111,9 @@ namespace AutoDrive::Algorithms {
         if(positionHistory_.empty()){
             return DataModels::LocalPosition{{},{},0};
         }
-        return positionHistory_.back();
+        return DataModels::LocalPosition {{kalmanX_.getPosition(), kalmanY_.getPosition(), kalmanZ_.getPosition()},
+                                                  orientation_,
+                                          getCurrentTime()};
     }
 
     std::deque<DataModels::LocalPosition> SelfModel::getPositionHistory() {

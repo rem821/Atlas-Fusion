@@ -25,7 +25,7 @@
 #include <iostream>
 #include <vector>
 
-namespace AutoDrive {
+namespace AtlasFusion {
     namespace DataLoader {
         namespace Folders {
 
@@ -95,6 +95,7 @@ namespace AutoDrive {
             const std::string kCameraRightFrontCalibYaml = "camera_right_front.yaml";
             const std::string kCameraRightSideCalibYaml = "camera_right_side.yaml";
             const std::string kCameraIrCalibYaml = "camera_ir.yaml";
+            const std::string kCameraVirtualCalibYaml = "camera_virtual.yaml";
 
             const std::vector <std::string> mandatoryFiles {
                     Folders::kCameraIr + kVideoFile,

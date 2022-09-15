@@ -3,7 +3,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
-namespace AutoDrive::Visualizers {
+namespace AtlasFusion::Visualizers {
 
     void RadarVisualizer::drawRadarDetectionsOnTopic(const std::vector<DataModels::RadarTiDataModel::Object>& objects, std::string topic, std::string frame) {
 
@@ -71,8 +71,7 @@ namespace AutoDrive::Visualizers {
             msg.markers.emplace_back(obj);
         }
         radarTiMaxObjectVisCount_ = object_count;
-        std::cout << object_count << " " << radarTiMaxObjectVisCount_ << std::endl;
-
+        
         publishers_[topic]->publish(msg);
     }
 }

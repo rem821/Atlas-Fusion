@@ -22,7 +22,7 @@
 
 #include "algorithms/pointcloud/PointCloudAggregator.h"
 
-namespace AutoDrive::Algorithms {
+namespace AtlasFusion::Algorithms {
 
     void PointCloudAggregator::addPointCloudBatches(std::vector<std::shared_ptr<DataModels::PointCloudBatch>> batches) {
         for (const auto& batch : batches) {
@@ -64,8 +64,30 @@ namespace AutoDrive::Algorithms {
             output->reserve(batchQueue_.size() * 2 * batchQueue_.at(0)->getPointsSize());
 
             for (const auto &batch : batchQueue_) {
-                // TODO: Avoid using + operator
                 *output += *(batch->getTransformedPoints());
+            }
+        }
+        return output;
+    }
+
+    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> PointCloudAggregator::getAggregatedPointCloudRaw() {
+        auto output = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+        if(!batchQueue_.empty()) {
+            output->reserve(batchQueue_.size() * 2 * batchQueue_.at(0)->getPointsSize());
+            for (const auto &batch : batchQueue_) {
+                *output += *(batch->getPoints());
+            }
+        }
+        return output;
+    }
+
+
+    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> PointCloudAggregator::getAggregatedPointCloudWithTf(const rtl::RigidTf3D<double>& tf) {
+        auto output = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+        if(!batchQueue_.empty()) {
+            output->reserve(batchQueue_.size() * 2 * batchQueue_.at(0)->getPointsSize());
+            for (const auto &batch : batchQueue_) {
+                *output += *(batch->getTransformedPointsWithAnotherTF(tf));
             }
         }
         return output;
@@ -87,5 +109,4 @@ namespace AutoDrive::Algorithms {
         }
         return output;
     }
-
 }

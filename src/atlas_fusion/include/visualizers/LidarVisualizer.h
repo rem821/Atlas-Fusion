@@ -26,6 +26,7 @@
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -33,7 +34,7 @@
 #include "Topics.h"
 #include "data_models/local_map/LidarDetection.h"
 
-namespace AutoDrive::Visualizers {
+namespace AtlasFusion::Visualizers {
 
     /**
      * Visualization backend (ROS) implementations for visualizing point cloud structures, like raw lidar scans or
@@ -59,8 +60,20 @@ namespace AutoDrive::Visualizers {
 
         }
 
+        template<typename PointT>
+        void drawPointcloudOnTopic(const std::shared_ptr<pcl::PointCloud<PointT>> pc, std::string topic, std::string frame) {
 
-        void drawPointcloudOnTopic(const std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> pc, std::string topic, std::string frame);
+            if(publishers_.count(topic) == 0) {
+                publishers_[topic] = std::make_shared<ros::Publisher>(node_.advertise<sensor_msgs::PointCloud2>( topic, 0));
+            }
+
+            sensor_msgs::PointCloud2 msg;
+            pcl::toROSMsg(*pc, msg);
+
+            msg.header.stamp = ros::Time::now();
+            msg.header.frame_id = frame;
+            publishers_[topic]->publish(msg);
+        }
 
         void drawApproximationOnTopic(std::shared_ptr<std::vector<rtl::LineSegment3D<double>>> ls, std::string topic, std::string frame, visualization_msgs::Marker::_color_type col);
 
@@ -75,4 +88,6 @@ namespace AutoDrive::Visualizers {
 
         visualization_msgs::MarkerArray lidarDetectionsToMarkerArray(std::vector<std::shared_ptr<const DataModels::LidarDetection>> detections, std::string frame);
     };
+
+
 }

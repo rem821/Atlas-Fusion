@@ -34,6 +34,7 @@
 #include "data_models/DataModelTypes.h"
 #include "data_models/local_map/LidarDetection.h"
 #include "data_models/radar/RadarTiDataModel.h"
+#include "data_models/lidar/LidarScanDataModel.h"
 
 #include "Topics.h"
 #include "Context.h"
@@ -49,7 +50,7 @@
 
 #include "TrajectoryVisualizer.h"
 
-namespace AutoDrive::Visualizers {
+namespace AtlasFusion::Visualizers {
 
     /**
      * The wrapper over the visualization backend. This class is the only way, how to Local Map could be visualized in
@@ -95,6 +96,14 @@ namespace AutoDrive::Visualizers {
          * @param data point cloud to be visualized
          */
         void drawLidarData(std::shared_ptr<DataModels::LidarScanDataModel> data);
+
+
+
+        /**
+         * Raw point cloud scan data visualization
+         * @param data point cloud to be visualized
+         */
+        void drawPointCloudData(std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> data, const std::string& topic);
 
         /**
          * Render aggregated point cloud scans over the time

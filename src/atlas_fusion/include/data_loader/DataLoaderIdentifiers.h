@@ -23,7 +23,7 @@
 #pragma once
 
 
-namespace AutoDrive::DataLoader {
+namespace AtlasFusion::DataLoader {
 
     /**
      * Lidar Data Loaders identifiers
@@ -48,6 +48,7 @@ namespace AutoDrive::DataLoader {
         kCameraRightFront,
         kCameraRightSide,
         kCameraIr,
+        kCameraVirtual,
         kErr,
     };
 

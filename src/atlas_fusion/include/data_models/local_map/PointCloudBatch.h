@@ -28,7 +28,7 @@
 
 #include <rtl/Transformation.h>
 
-namespace AutoDrive::DataModels {
+namespace AtlasFusion::DataModels {
 
     /**
      * Point Cloud Batch represents small part of the LiDAR scan. Splitting scans into batches is used during the
@@ -74,7 +74,7 @@ namespace AutoDrive::DataModels {
          * @param tf second transformation applied on points
          * @return transformed points
          */
-        std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> getTransformedPointsWithAnotherTF(rtl::RigidTf3D<double>& tf) const;
+        std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> getTransformedPointsWithAnotherTF(const rtl::RigidTf3D<double>& tf) const;
 
         /**
          * Timestamp when the points have been scanned

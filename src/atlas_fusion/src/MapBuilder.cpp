@@ -30,8 +30,11 @@
 #include "data_models/DataModelTypes.h"
 
 #include "algorithms/Projector.h"
+#include "algorithms/pointcloud/SphericalPoint.h"
 
-namespace AutoDrive {
+#include "visualizers/Topics.h"
+
+namespace AtlasFusion {
 
 
     void MapBuilder::loadData(const std::string& dataFolder) {
@@ -46,6 +49,7 @@ namespace AutoDrive {
                 LocalMap::Frames::kCameraRightFront,
                 LocalMap::Frames::kCameraRightSide,
                 LocalMap::Frames::kCameraIr,
+                //LocalMap::Frames::kCameraVirtual,
         };
 
         for(let& frame : cameraFrames) {
@@ -67,6 +71,7 @@ namespace AutoDrive {
 
                 depthMap_.addProjector(projector, cameraID);
                 detectionProcessor_.addProjector(projector, frame);
+                pointCloudColorizer_.add_projector(projector, cameraID);
             } else {
                 context_.logger_.warning("Unable to read camera calib data");
             }
@@ -163,6 +168,10 @@ namespace AutoDrive {
             } else if (dataType == DataModels::DataModelTypes::kLidarScanDataModelType) {
 
                 mut lidarData = std::dynamic_pointer_cast<DataModels::LidarScanDataModel>(data);
+
+                let lidarID = lidarData->getLidarIdentifier();
+                if (Center_Lidar_Only && lidarID != DataLoader::LidarIdentifier::kCenterLidar) { continue; }
+
                 lidarData->registerFilter(std::bind(&Algorithms::LidarFilter::applyFiltersOnLidarData, &lidarFilter_, std::placeholders::_1));
                 processLidarScanData(lidarData, sensorFrame);
                 cache_.setNewLidarScan(lidarData);
@@ -194,74 +203,27 @@ namespace AutoDrive {
         mut batches = pointCloudAggregator_.getAllBatches();
         depthMap_.updatePointcloudData(batches);
 
+        if (imgData->getCameraIdentifier() == DataLoader::CameraIndentifier::kCameraLeftFront) {
 
-        mut detections3D = depthMap_.onNewCameraData(imgData, selfModel_.getPosition());
-        mut frustums = detectionProcessor_.onNew3DYoloDetections(detections3D, sensorFrame);
+            generateDepthMapForLastIR(imgData);
+            generateDepthMapForRGBFrame(imgData);
 
-        if (RGB_Detection_To_IR_Projection) {
-            if (sensorFrame == LocalMap::Frames::kCameraLeftFront) {
+            mut detections3D = depthMap_.onNewCameraData(imgData, selfModel_.getPosition());
+            let frustums = detectionProcessor_.onNew3DYoloDetections(detections3D, sensorFrame);
 
-                mut imuToCameraTf = context_.tfTree_.getTransformationForFrame(LocalMap::Frames::kCameraIr);
-                mut reprojectedYoloDetections = yoloIrReprojector_.onNewDetections(frustums, imuToCameraTf.inverted());
+            projectRGBDetectionsToIR(imgData, frustums);
 
-                if (!reprojectedYoloDetections->empty()) {
-                    mut imgWidthHeight = yoloIrReprojector_.getLastIrFrameWidthHeight();
-                    yoloIRDetectionWriter_.writeDetections(reprojectedYoloDetections,
-                                                           yoloIrReprojector_.getCurrentIrFrameNo());
-                    yoloIRDetectionWriter_.writeDetectionsAsTrainData(reprojectedYoloDetections,
-                                                                      yoloIrReprojector_.getCurrentIrFrameNo(),
-                                                                      imgWidthHeight.first, imgWidthHeight.second);
-                    yoloIRDetectionWriter_.writeIRImageAsTrainData(yoloIrReprojector_.getLastIrFrame(),
-                                                                   yoloIrReprojector_.getCurrentIrFrameNo());
-                }
+            localMap_.setFrustumDetections(frustums, sensorFrame);
+            visualizationHandler_.drawFrustumDetections(localMap_.getFrustumDetections());
 
-
-                if (Depth_Map_For_IR) {
-                    try {
-                        mut irCameraFrame = std::make_shared<DataModels::CameraIrFrameDataModel>(
-                                imgData->getTimestamp(),
-                                imgData->getImage(),
-                                0.0f,
-                                100.0f,
-                                imgData->getCameraIdentifier(),
-                                std::vector<std::shared_ptr<DataModels::YoloDetection>>{});
-                        static size_t frameCnt = 0;
-
-                        mut originToImuTf = selfModel_.getPosition().toTf();
-
-                        mut points2Dand3Dpair = depthMap_.getPointsInCameraFoV(
-                                irCameraFrame->getCameraIdentifier(),
-                                irCameraFrame->getImage().cols,
-                                irCameraFrame->getImage().rows,
-                                originToImuTf,
-                                false);
-                        mut img = lidarIrImgPlotter_.renderLidarPointsToImg(points2Dand3Dpair->first,
-                                                                             points2Dand3Dpair->second,
-                                                                             irCameraFrame->getImage().cols,
-                                                                             irCameraFrame->getImage().rows, 3);
-
-                        if (yoloIrReprojector_.getCurrentIrFrameNo() > 0) {
-                            lidarIrImgPlotter_.saveImage(img, frameCnt, "_depth", "png");
-                            mut rgb_cutout = simpleImageProcessor_.convertLeftFrontRGBToIrFieldOfView(imgData->getImage());
-                            lidarIrImgPlotter_.saveImage(std::make_shared<cv::Mat>(rgb_cutout), frameCnt,
-                                                         "_rgb", "jpeg");
-                            lidarIrImgPlotter_.saveImage(
-                                    std::make_shared<cv::Mat>(yoloIrReprojector_.getLastIrFrame()->getImage()),
-                                    frameCnt,
-                                    "_ir",
-                                    "jpeg");
-                            frameCnt++;
-                        }
-                    }
-                    catch (std::exception &e) {
-                        std::cerr << e.what() << std::endl;
-                    }
-                }
+            if (Lidar_Colorization) {
+                let originToImuTf = selfModel_.getPosition().toTf();
+                let colorized_pc_rgb = pointCloudColorizer_.colorize_point_cloud_rgb(batches, originToImuTf);
+                visualizationHandler_.drawPointCloudData(colorized_pc_rgb, Visualizers::Topics::kLidarColorizedRGB);
             }
         }
 
-        localMap_.setFrustumDetections(frustums, sensorFrame);
-        visualizationHandler_.drawFrustumDetections(localMap_.getFrustumDetections());
+
 
         if(cnt++ >= 3) {
             cnt = 0;
@@ -284,7 +246,13 @@ namespace AutoDrive {
             visualizationHandler_.drawLidarDetection(localMap_.getLidarDetections());
         }
 
-        visualizationHandler_.drawRGBImage(imgData);
+        if (Lidar_Colorization) {
+            pointCloudColorizer_.update_rgb_camera_frame(imgData);
+        }
+
+        if (!Center_Lidar_Only) {
+            visualizationHandler_.drawRGBImage(imgData);
+        }
     }
 
 
@@ -301,8 +269,19 @@ namespace AutoDrive {
                                                              points2Dand3Dpair->second,
                                                              irCameraFrame->getImage().cols,
                                                              irCameraFrame->getImage().rows);
-        yoloIrReprojector_.onNewIRFrame(irCameraFrame);
-        visualizationHandler_.drawIRImage(irCameraFrame);
+        if (Lidar_Colorization) {
+            pointCloudColorizer_.update_ir_camera_frame(irCameraFrame);
+        }
+
+        if (!Center_Lidar_Only) {
+            visualizationHandler_.drawIRImage(irCameraFrame);
+        }
+
+        if (Lidar_Colorization) {
+            let batches = pointCloudAggregator_.getAllBatches();
+            let colorized_pc_ir = pointCloudColorizer_.colorize_point_cloud_ir(batches, originToImuTf);
+            visualizationHandler_.drawPointCloudData(colorized_pc_ir, Visualizers::Topics::kLidarColorizedIR);
+        }
     }
 
 
@@ -341,6 +320,9 @@ namespace AutoDrive {
         mut linAccNoGrav = imuProcessor_.removeGravitaionAcceleration(imuData->getLinearAcc());
 
         selfModel_.onImuImuData(imuData);
+
+        mut currentPose = selfModel_.getPosition();
+        visualizationHandler_.updateOriginToRootTf(currentPose);
         visualizationHandler_.drawImuData(linAccNoGrav);
     }
 
@@ -348,10 +330,21 @@ namespace AutoDrive {
     void MapBuilder::processLidarScanData(std::shared_ptr<DataModels::LidarScanDataModel> lidarData, std::string& sensorFrame) {
 
         let lidarID = lidarData->getLidarIdentifier();
-        if (cache_.getLidarScanNo(lidarID) > 0) {
+
+        if (cache_.getLidarScanNo(lidarID) >= 0) {
             aggregateLidar(lidarData);
             approximateLidar(lidarData);
         }
+
+        if (Center_Lidar_Only) {
+            if (cache_.getRGBFrameNo(DataLoader::CameraIndentifier::kCameraLeftFront) > 0) {
+                visualizationHandler_.drawRGBImage(cache_.getRGBFrame(DataLoader::CameraIndentifier::kCameraLeftFront));
+            }
+            if (cache_.getIRFrameNo(DataLoader::CameraIndentifier::kCameraIr) > 0) {
+                visualizationHandler_.drawIRImage(cache_.getIRFrame(DataLoader::CameraIndentifier::kCameraIr));
+            }
+        }
+
         visualizationHandler_.drawLidarData(lidarData);
         visualizationHandler_.drawSelf();
     }
@@ -362,19 +355,139 @@ namespace AutoDrive {
     }
 
 
+    void MapBuilder::generateDepthMapForRGBFrame(std::shared_ptr<DataModels::CameraFrameDataModel> rgbImg) {
 
-    void MapBuilder::generateDepthMapForIR() {
+        static size_t cnt = 0;
+        if (Depth_Map_For_RGB_Left_Front || Depth_Map_For_RGB_Virtual) {
+            let originToImuTf = selfModel_.getPosition().toTf();
 
+            if (Depth_Map_For_RGB_Left_Front) {
+                mut points2Dand3Dpair = depthMap_.getPointsInCameraFoV(rgbImg->getCameraIdentifier(),
+                                                                       rgbImg->getImage().cols,
+                                                                       rgbImg->getImage().rows,
+                                                                       originToImuTf,
+                                                                       false);
+                mut depthImg = simpleImageProcessor_.renderLidarPointsToImg(points2Dand3Dpair->first,
+                                                                            points2Dand3Dpair->second,
+                                                                            rgbImg->getImage().cols,
+                                                                            rgbImg->getImage().rows, 11);
+
+                let depthMap = std::make_shared<DataModels::DepthMapDataModel>(rgbImg->getTimestamp(),
+                                                                               depthImg.clone(),
+                                                                               DataLoader::CameraIndentifier::kCameraLeftFront,
+                                                                               std::vector<std::shared_ptr<DataModels::YoloDetection>>{});
+                let lidar_data = pointCloudAggregator_.getAggregatedPointCloudWithTf(originToImuTf.inverted());
+                let bird_view = occGrid_.create_bird_view_from_data(lidar_data,
+                                                                    Algorithms::OccupancyGrid3D::BirdViewParams(15.0, 15.0, 50.0, 0.0, 0.1));
+
+                let spherical_pointcloud = Algorithms::SphericalPoint<float>::fromPointCloud(*lidar_data);
+                let spherical_img = simpleImageProcessor_.renderSphericalPointsToImg(spherical_pointcloud, 15.0, 45.0, 50.0, 0.05, 5);
+
+                imageWriter_.saveImage(depthMap->getImage(), cnt, DataLoader::Folders::kOutputDepthMap + "depth_rgb/", "", "png");
+                imageWriter_.saveImage(bird_view, cnt, DataLoader::Folders::kOutputDepthMap + "bird_view/", "", "png");
+                imageWriter_.saveImage(spherical_img, cnt, DataLoader::Folders::kOutputDepthMap + "sphere/", "", "png");
+            }
+            if (Depth_Map_For_RGB_Virtual) {
+                mut points2Dand3Dpair = depthMap_.getPointsInCameraFoV(DataLoader::CameraIndentifier::kCameraVirtual,
+                                                                       rgbImg->getImage().cols,
+                                                                       rgbImg->getImage().rows,
+                                                                       originToImuTf,
+                                                                       false);
+                mut depthImg = simpleImageProcessor_.renderLidarPointsToImg(points2Dand3Dpair->first,
+                                                                            points2Dand3Dpair->second,
+                                                                            rgbImg->getImage().cols,
+                                                                            rgbImg->getImage().rows, 11);
+                mut depthImgWithHeight = simpleImageProcessor_.renderLidarPointsToImg(points2Dand3Dpair->first,
+                                                                            points2Dand3Dpair->second,
+                                                                            rgbImg->getImage().cols,
+                                                                            rgbImg->getImage().rows, 11);
+
+                let depthMap = std::make_shared<DataModels::DepthMapDataModel>(rgbImg->getTimestamp(),
+                                                                               depthImg.clone(),
+                                                                               DataLoader::CameraIndentifier::kCameraVirtual,
+                                                                               std::vector<std::shared_ptr<DataModels::YoloDetection>>{});
+                let depthMapWithHeight = std::make_shared<DataModels::DepthMapDataModel>(rgbImg->getTimestamp(),
+                                                                               depthImgWithHeight.clone(),
+                                                                               DataLoader::CameraIndentifier::kCameraVirtual,
+                                                                               std::vector<std::shared_ptr<DataModels::YoloDetection>>{});
+
+                imageWriter_.saveImage(depthMap->getImage(), cnt, DataLoader::Folders::kOutputDepthMap + "virtual_cam/", "", "png");
+                imageWriter_.saveImage(depthMap->getImage(), cnt, DataLoader::Folders::kOutputDepthMap + "virtual_cam_height/", "", "png");
+            }
+            cnt++;
+        }
     }
 
-    void MapBuilder::projectRGBDetectionsToIR() {
+    void MapBuilder::generateDepthMapForLastIR(std::shared_ptr<DataModels::CameraFrameDataModel> rgbImg) {
 
+        if (cache_.getIRFrameNo(DataLoader::CameraIndentifier::kCameraIr) < 0) {
+            return;
+        }
+
+        let irFrame = cache_.getIRFrame(DataLoader::CameraIndentifier::kCameraIr);
+        if (Depth_Map_For_IR) {
+            let originToImuTf = selfModel_.getPosition().toTf();
+            mut points2Dand3Dpair = depthMap_.getPointsInCameraFoV(irFrame->getCameraIdentifier(),
+                                                                   irFrame->getImage().cols,
+                                                                   irFrame->getImage().rows,
+                                                                   originToImuTf,
+                                                                   false);
+            mut depthImg = simpleImageProcessor_.renderLidarPointsToImg(points2Dand3Dpair->first,
+                                                                        points2Dand3Dpair->second,
+                                                                        irFrame->getImage().cols,
+                                                                        irFrame->getImage().rows, 3);
+
+            let depthMap = std::make_shared<DataModels::DepthMapDataModel>(rgbImg->getTimestamp(),
+                                                                           depthImg.clone(),
+                                                                           DataLoader::CameraIndentifier::kCameraIr,
+                                                                           std::vector<std::shared_ptr<DataModels::YoloDetection>>{});
+
+            cache_.setNewDepthMap(depthMap);
+            if (cache_.getIRFrameNo(DataLoader::CameraIndentifier::kCameraIr) >= 0 ||
+                cache_.getDepthMapNo(DataLoader::CameraIndentifier::kCameraIr) >= 0) {
+
+                let frameCnt = cache_.getIRFrameNo(DataLoader::CameraIndentifier::kCameraIr);
+
+                imageWriter_.saveImage(cache_.getDepthMap(DataLoader::CameraIndentifier::kCameraIr)->getImage(), frameCnt, DataLoader::Folders::kOutputDepthMap, "_depth", "png");
+                let a = cache_.getDepthMap(DataLoader::CameraIndentifier::kCameraIr);
+                mut rgb_cutout = simpleImageProcessor_.convertLeftFrontRGBToIrFieldOfView(rgbImg->getImage());
+                imageWriter_.saveImage(rgb_cutout, frameCnt, DataLoader::Folders::kOutputDepthMap, "_rgb", "jpeg");
+                imageWriter_.saveImage(cache_.getIRFrame(DataLoader::CameraIndentifier::kCameraIr)->getImage(), frameCnt, DataLoader::Folders::kOutputDepthMap, "_ir", "jpeg");
+            }
+        }
+    }
+
+    void MapBuilder::projectRGBDetectionsToIR(std::shared_ptr<DataModels::CameraFrameDataModel> imgData, std::vector<std::shared_ptr<const DataModels::FrustumDetection>> frustums) {
+
+        let sensorFrame = getFrameForData(imgData);
+        if (RGB_Detection_To_IR_Projection) {
+            if (sensorFrame == LocalMap::Frames::kCameraLeftFront) {
+
+                let irFrameNo = cache_.getIRFrameNo(DataLoader::CameraIndentifier::kCameraIr);
+                if (irFrameNo < 0) {
+                    return;
+                }
+
+                mut imuToCameraTf = context_.tfTree_.getTransformationForFrame(LocalMap::Frames::kCameraIr);
+                mut reprojectedYoloDetections = yoloIrReprojector_.onNewDetections(frustums, imuToCameraTf.inverted());
+
+                let lastIrFrame = cache_.getIRFrame(DataLoader::CameraIndentifier::kCameraIr);
+                mut imgWidthHeight = std::pair<int, int>{lastIrFrame->getImage().cols, lastIrFrame->getImage().rows};
+                yoloIRDetectionWriter_.writeDetections(reprojectedYoloDetections, irFrameNo);
+                yoloIRDetectionWriter_.writeDetectionsAsTrainData(reprojectedYoloDetections, irFrameNo, imgWidthHeight.first, imgWidthHeight.second);
+                yoloIRDetectionWriter_.writeIRImageAsTrainData(lastIrFrame, irFrameNo);
+            }
+        }
     }
 
     void MapBuilder::aggregateLidar(const std::shared_ptr<DataModels::LidarScanDataModel>& lidarData) {
 
         let lidarID = lidarData->getLidarIdentifier();
         let sensorFrame = getFrameForData(lidarData);
+
+        if (cache_.getLidarScanNo(lidarID) < 0) {
+            return;
+        }
 
         mut lidarTF = context_.tfTree_.getTransformationForFrame(sensorFrame);
         let lastLidarTimestamp = (cache_.getLidarScan(lidarID))->getTimestamp();
@@ -402,6 +515,10 @@ namespace AutoDrive {
 
         let lidarID = lidarData->getLidarIdentifier();
         let sensorFrame = getFrameForData(lidarData);
+
+        if (cache_.getLidarScanNo(lidarID) >= 0) {
+            return;
+        }
 
         mut lidarTF = context_.tfTree_.getTransformationForFrame(sensorFrame);
         let lastLidarTimestamp = (cache_.getLidarScan(lidarID))->getTimestamp();
@@ -465,6 +582,8 @@ namespace AutoDrive {
                         return LocalMap::Frames::kCameraRightFront;
                     case DataLoader::CameraIndentifier::kCameraRightSide:
                         return LocalMap::Frames::kCameraRightSide;
+                    case DataLoader::CameraIndentifier::kCameraVirtual:
+                        return LocalMap::Frames::kCameraVirtual;
                     default:
                         context_.logger_.error("Unable to estimate camera frame!");
                         return LocalMap::Frames::kErr;

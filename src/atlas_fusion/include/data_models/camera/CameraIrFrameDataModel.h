@@ -26,10 +26,12 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
-#include "data_models/all.h"
+#include "data_models/GenericDataModel.h"
+#include "data_models/camera/CameraFrameDataModel.h"
+#include "data_models/camera/CameraCalibrationParamsDataModel.h"
 #include "data_loader/DataLoaderIdentifiers.h"
 
-namespace AutoDrive::DataModels {
+namespace AtlasFusion::DataModels {
 
     /**
      * Camera IR Frame Data Model represents the thermal image captured by the IR camera. Contains timestamp, image
@@ -88,6 +90,15 @@ namespace AutoDrive::DataModels {
          * @return unique camera sensor identifier
          */
         DataLoader::CameraIndentifier getCameraIdentifier() { return cameraIdentifier_;};
+
+
+        std::shared_ptr<DataModels::CameraFrameDataModel> asCameraFrame() const {
+            auto yolo_objects = std::vector<std::shared_ptr<YoloDetection>>{};
+            cv::Mat image_3C;
+            cv::cvtColor(image_, image_3C, cv::COLOR_GRAY2BGR);
+            auto output = std::make_shared<DataModels::CameraFrameDataModel>(timestamp_, image_3C, 0, cameraIdentifier_, yolo_objects);
+            return output;
+        }
 
     private:
 

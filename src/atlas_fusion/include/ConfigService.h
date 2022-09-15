@@ -25,7 +25,7 @@
 #include <iostream>
 #include <yaml-cpp/yaml.h>
 
-namespace AutoDrive {
+namespace AtlasFusion {
 
     /**
      *  Config Service is a class used to read out the startup configuration from the yaml file.
@@ -161,6 +161,7 @@ namespace AutoDrive {
 
         YAML::Node getNode(const std::vector<std::string>& keys) {
             YAML::Node config = YAML::LoadFile(confPath_);
+            std::cout << "Reading YAML file: " + keys[0] << std::endl;
             for (const auto& key : keys) {
                 if (config[key]) {
                     config = config[key];

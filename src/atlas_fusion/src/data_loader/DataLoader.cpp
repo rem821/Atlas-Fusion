@@ -30,7 +30,7 @@
 #include <iomanip>
 #include <local_map/Frames.h>
 
-namespace AutoDrive {
+namespace AtlasFusion {
     namespace DataLoader {
 
         bool DataLoader::loadData(std::string path) {
@@ -180,6 +180,8 @@ namespace AutoDrive {
                 return CameraIndentifier::kCameraRightSide;
             } else if (frame == LocalMap::Frames::kCameraIr) {
                 return CameraIndentifier::kCameraIr;
+            } else if (frame == LocalMap::Frames::kCameraVirtual) {
+                return CameraIndentifier::kCameraVirtual;
             } else {
                 context_.logger_.warning("Unexpected camera frame in DataLoader::getCameraIDfromFrame()!");
                 return CameraIndentifier::kErr;

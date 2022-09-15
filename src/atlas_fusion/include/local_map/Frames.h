@@ -25,7 +25,7 @@
 #include <iostream>
 #include <string>
 
-namespace AutoDrive::LocalMap {
+namespace AtlasFusion::LocalMap {
 
     /**
      * Frames defines the names of the sensor's local coordinates systems.
@@ -46,6 +46,7 @@ namespace AutoDrive::LocalMap {
         const std::string kCameraRightFront = "camera_right_front";
         const std::string kCameraRightSide = "camera_right_side";
         const std::string kCameraIr = "camera_ir";
+        const std::string kCameraVirtual = "camera_virtual";
 
         const std::string kGnssAntennaFront = "gnss_front";
         const std::string kGnssAntennaRear = "gnss_rear";

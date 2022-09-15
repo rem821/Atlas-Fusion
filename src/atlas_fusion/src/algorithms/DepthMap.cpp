@@ -28,7 +28,7 @@
 #include <data_models/local_map/LocalPosition.h>
 #include "local_map/Frames.h"
 
-namespace AutoDrive::Algorithms {
+namespace AtlasFusion::Algorithms {
 
 
     void DepthMap::updatePointcloudData(std::vector<std::shared_ptr<DataModels::PointCloudBatch>> batches) {
@@ -58,7 +58,7 @@ namespace AutoDrive::Algorithms {
         if(!valid2DPoints.empty()) {
             for (auto &detection : data->getYoloDetections()) {
 
-                auto detPointIndexes = getIndexesOfPointsInDetection(valid2DPoints, detection);
+                auto detPointIndexes = getIndexesOfPointsInDetection(valid2DPoints, detection->scale(0.5));
 
                 auto bb = detection->getBoundingBox();
 
@@ -208,6 +208,8 @@ namespace AutoDrive::Algorithms {
                 return LocalMap::Frames::kCameraRightSide;
             case DataLoader::CameraIndentifier::kCameraIr:
                 return LocalMap::Frames::kCameraIr;
+            case DataLoader::CameraIndentifier::kCameraVirtual:
+                return LocalMap::Frames::kCameraVirtual;
             default:
                 context_.logger_.warning("Unexpected camera ID type in depth map");
                 return LocalMap::Frames::kOrigin;

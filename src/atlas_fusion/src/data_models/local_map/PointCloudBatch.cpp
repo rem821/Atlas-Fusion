@@ -22,7 +22,7 @@
 
 #include "data_models/local_map/PointCloudBatch.h"
 
-namespace AutoDrive::DataModels {
+namespace AtlasFusion::DataModels {
 
 
     std::shared_ptr<const pcl::PointCloud<pcl::PointXYZ>> PointCloudBatch::getPoints() const {
@@ -37,7 +37,7 @@ namespace AutoDrive::DataModels {
 
 
 
-    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> PointCloudBatch::getTransformedPointsWithAnotherTF(rtl::RigidTf3D<double>& tf) const {
+    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> PointCloudBatch::getTransformedPointsWithAnotherTF(const rtl::RigidTf3D<double>& tf) const {
 
         return transformPointsByTF( tf(tf_), points_ );
 
