@@ -49,7 +49,7 @@ namespace AtlasFusion {
                 LocalMap::Frames::kCameraRightFront,
                 LocalMap::Frames::kCameraRightSide,
                 LocalMap::Frames::kCameraIr,
-                LocalMap::Frames::kCameraVirtual,
+                //LocalMap::Frames::kCameraVirtual,
         };
 
         for(let& frame : cameraFrames) {

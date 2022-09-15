@@ -3,9 +3,8 @@ logger:
   log_ext: "log"
   log_lvl: 1
 
-data_folder: "/home/default_user/Data/bud_s3/3_1_3_4/"
-#data_folder: "/home/default_user/Data/rec_2_part_1/"
-calibrations_folder: "/home/default_user/Developer/Atlas-Fusion/src/atlas_fusion/calibrations/"
+data_folder: "/home/standa/3_1_1_1/"
+calibrations_folder: "/home/standa/Desktop/Projekty/Atlas-Fusion/src/atlas_fusion/calibrations/"
 
 map_builder:
   keep_history_sec_length: 10

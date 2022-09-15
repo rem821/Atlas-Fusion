@@ -161,6 +161,7 @@ namespace AtlasFusion {
 
         YAML::Node getNode(const std::vector<std::string>& keys) {
             YAML::Node config = YAML::LoadFile(confPath_);
+            std::cout << "Reading YAML file: " + keys[0] << std::endl;
             for (const auto& key : keys) {
                 if (config[key]) {
                     config = config[key];
